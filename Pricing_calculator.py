@@ -69,8 +69,8 @@ cogs_per_test = round100(cogs_per_test)
 
 # --- VOLUME-BASED CALCULATIONS ---
 # Current scenario (single test basis * assumed base volume = 1)
-current_revenue = current_price * volume
-current_cogs = cogs_per_test * volume
+current_revenue = current_price 
+current_cogs = cogs_per_test
 
 # --- OPEX CALCULATIONS (more realistic scaling) ---
 # Base OPEX is 25% of current revenue
@@ -164,5 +164,6 @@ projection = pd.DataFrame({
     ]
 })
 st.line_chart(projection.set_index("Volume"))
+
 
 
