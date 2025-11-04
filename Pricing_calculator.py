@@ -122,7 +122,12 @@ comparison = pd.DataFrame({
 
 # --- DISPLAY TABLE ---
 st.subheader(f"Pricing Simulation: {selected_test}")
-st.dataframe(comparison.style.format("{:,.0f}"), use_container_width=True)
+# Ensure only numeric columns are formatted
+numeric_cols = comparison.select_dtypes(include=['float64', 'int64']).columns
+comparison[numeric_cols] = comparison[numeric_cols].apply(lambda x: x.round(0))
+
+st.dataframe(comparison, use_container_width=True)
+
 
 # --- SUMMARY ---
 st.markdown(f"""
@@ -145,3 +150,4 @@ st.line_chart(projection.set_index("Volume"))
 
 # --- FOOTER ---
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
