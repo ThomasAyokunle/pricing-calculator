@@ -42,10 +42,10 @@ df = pd.DataFrame(data)
 st.sidebar.header("Simulation Controls")
 
 selected_test = st.sidebar.selectbox("Select Test", df["Test Name"])
-markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 3.0, 1.5, 0.1)
+markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.1)
 custom_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0.0, value=0.0, step=500.0)
 volume = st.sidebar.number_input("Projected Test Volume", 1, 500, 50)
-opex_increase_rate = st.sidebar.slider("OPEX Volume Sensitivity (%)", 0, 50, 20)
+opex_increase_rate = st.sidebar.slider("OPEX Volume Sensitivity (%)", 0, 100, 0)
 
 # --- FETCH TEST DETAILS ---
 test = df[df["Test Name"] == selected_test].iloc[0]
@@ -164,6 +164,7 @@ projection = pd.DataFrame({
     ]
 })
 st.line_chart(projection.set_index("Volume"))
+
 
 
 
