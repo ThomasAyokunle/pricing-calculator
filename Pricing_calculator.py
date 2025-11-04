@@ -83,7 +83,7 @@ proposed_gross_profit = proposed_revenue - proposed_cogs
 
 # Slight increase in OPEX — e.g., 25% × (1 + sensitivity%)
 opex_factor = 1 + (opex_increase_rate / 100)
-proposed_opex = 0.25 * proposed_revenue * opex_factor
+proposed_opex = base_opex * (1 + 0.1 * math.log1p(volume / 50))
 
 # --- PROFITABILITY METRICS ---
 current_gross_profit = current_revenue - current_cogs
@@ -164,6 +164,7 @@ projection = pd.DataFrame({
     ]
 })
 st.line_chart(projection.set_index("Volume"))
+
 
 
 
