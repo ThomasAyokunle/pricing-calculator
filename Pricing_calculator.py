@@ -72,12 +72,26 @@ cogs_per_test = round100(cogs_per_test)
 current_revenue = current_price * volume
 current_cogs = cogs_per_test * volume
 
-# --- OPEX CALCULATIONS ---
+# --- OPEX CALCULATIONS (more realistic scaling) ---
+# Base OPEX is 25% of current revenue
 base_opex = 0.25 * current_revenue
-# Apply sensitivity scaling to proposed OPEX based on volume
+
+# For proposed, OPEX rises slightly (not exponentially) with volume sensitivity
 proposed_revenue = proposed_price * volume
-volume_factor = 1 + (opex_increase_rate / 100) * (volume / 100)
-proposed_opex = 0.25 * proposed_revenue * volume_factor
+proposed_cogs = cogs_per_test * volume
+proposed_gross_profit = proposed_revenue - proposed_cogs
+
+# Slight increase in OPEX — e.g., 25% × (1 + sensitivity%)
+opex_factor = 1 + (opex_increase_rate / 100)
+proposed_opex = 0.25 * proposed_revenue * opex_factor
+
+# --- PROFITABILITY METRICS ---
+current_gross_profit = current_revenue - current_cogs
+current_ebitda = current_gross_profit - base_opex
+current_margin = round((current_ebitda / current_revenue) * 100, 1)
+
+proposed_ebitda = proposed_gross_profit - proposed_opex
+proposed_margin = round((proposed_ebitda / proposed_revenue) * 100, 1)
 
 # --- PROFITABILITY METRICS ---
 current_gross_profit = current_revenue - current_cogs
@@ -144,10 +158,11 @@ st.subheader("Volume Projection (EBITDA Impact)")
 projection = pd.DataFrame({
     "Volume": range(1, volume + 1),
     "Total Revenue": [proposed_price * v for v in range(1, volume + 1)],
-    "Total EBITDA": [(proposed_price * v - cogs_per_test * v - 0.25 * proposed_price * v * volume_factor) for v in range(1, volume + 1)]
+    "Total EBITDA": [
+        (proposed_price * v - cogs_per_test * v - 0.25 * proposed_price * v * opex_factor)
+        for v in range(1, volume + 1)
+    ]
 })
 st.line_chart(projection.set_index("Volume"))
 
-# --- FOOTER ---
-st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
 
