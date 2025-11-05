@@ -120,27 +120,20 @@ comparison = pd.DataFrame({
     ]
 })
 
-# --- STYLING ---
-def highlight_margin(val):
-    """Highlight margin green if ≥20%, else red"""
-    try:
-        val = float(val)
-        color = "lightgreen" if val >= 20 else "#ffcccc"
-        return f"background-color: {color}"
-    except:
-        return ""
-
-styled_df = comparison.style.format("{:,.0f}", na_rep="-").applymap(
-    highlight_margin, subset=["Current", "Proposed"]
-)
-
-# --- DISPLAY RESULTS ---
+# --- DISPLAY COMPARISON TABLE ---
 st.subheader(f"Pricing Simulation: {selected_test} ({lab})")
-def highlight_min(s):
-    is_min = s == s.min()
-    return ["background-color: #ffcccc" if v else "" for v in is_min]
+st.dataframe(comparison.style.format("{:,.0f}"), use_container_width=True)
 
-styled_df = df.style.apply(highlight_min, subset=["MARGIN %"], axis=0)
+# --- TEST OVERVIEW TABLE (Current vs Proposed) ---
+df["PROPOSED PRICE"] = df["COGS"] * markup
+df["DIFFERENCE (₦)"] = df["PROPOSED PRICE"] - df["CURRENT PRICE"]
+
+overview = df[["TEST NAME", "CURRENT PRICE", "PROPOSED PRICE", "DIFFERENCE (₦)"]]
+overview["PROPOSED PRICE"] = overview["PROPOSED PRICE"].apply(round100)
+overview["DIFFERENCE (₦)"] = overview["DIFFERENCE (₦)"].apply(round100)
+
+st.subheader("Test Overview – Current vs Proposed Pricing")
+st.dataframe(overview.style.format("{:,.0f}"), use_container_width=True)
 
 # --- SUMMARY ---
 st.markdown(f"""
@@ -172,4 +165,4 @@ st.markdown(
     "<p style='text-align:center; font-size:14px;'>Created by <b>Ayokunle Thomas</b> – Data Scientist</p>",
     unsafe_allow_html=True
 )
-
+st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
