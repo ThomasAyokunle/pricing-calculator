@@ -176,12 +176,14 @@ projection = pd.DataFrame({
 st.line_chart(projection.set_index("Volume"))
 
 # --- FOOTER ---
+st.caption("💡 *Opex Sensitivity controls how much operating cost grows as volume increases.*")
 st.markdown("---")
 st.markdown(
     "<p style='text-align:center; font-size:14px;'>Created by <b>Ayokunle Thomas</b> – Data Scientist</p>",
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
 
