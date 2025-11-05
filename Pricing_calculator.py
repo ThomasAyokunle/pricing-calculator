@@ -120,9 +120,18 @@ comparison = pd.DataFrame({
     ]
 })
 
-# --- DISPLAY COMPARISON TABLE ---
-st.subheader(f"Pricing Simulation: {selected_test} ({lab})")
-st.dataframe(comparison.style.format("{:,.0f}"), use_container_width=True)
+# --- DISPLAY TABLE ---
+st.subheader(f"Pricing Simulation: {selected_test}")
+
+# Apply numeric formatting only to numeric columns
+st.dataframe(
+    comparison.style.format({
+        "Current": "{:,.0f}",
+        "Proposed": "{:,.0f}",
+        "Change": "{:,.0f}"
+    }),
+    use_container_width=True
+)
 
 # --- TEST OVERVIEW TABLE (Current vs Proposed) ---
 df["PROPOSED PRICE"] = df["COGS"] * markup
@@ -166,3 +175,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
