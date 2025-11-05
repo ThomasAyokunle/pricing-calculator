@@ -1,104 +1,100 @@
 # ==============================================================
-# Laboratory Pricing Calculator (Volume-Adjusted COGS & Revenue)
+# Laboratory Pricing Calculator (Google Sheet Integrated)
 # ==============================================================
 
 import streamlit as st
 import pandas as pd
 import math
+import numpy as np
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Laboratory Pricing Calculator", layout="wide")
 
 # --- HEADER ---
-st.title("🧪 Laboratory Pricing Calculator")
+st.title("Laboratory Pricing Calculator")
 st.markdown("""
 This calculator estimates and compares pricing scenarios for laboratory tests.  
-It emphasizes pricing impact on profitability, allowing OPEX, COGS, and revenue to scale 
-appropriately with test volumes.
+It helps you understand how pricing, OPEX, and volume affect profitability.
 """)
 
-# --- LOAD DATA FROM GOOGLE SHEETS ---
-st.sidebar.header("⚙️ Simulation Controls")
+# --- GOOGLE SHEET SETUP ---
+SHEET_ID = "1VAHAw4KVWuo-tP_rDlx3h_oYwypOodiJuZzhSYiX2v4"
 
-sheet_url = "https://docs.google.com/spreadsheets/d/1VAHAw4KVWuo-tP_rDlx3h_oYwypOodiJuZzhSYiX2v4/gviz/tq?tqx=out:csv"
-
-@st.cache_data
-def load_data(sheet_name):
-    url = sheet_url + f"&sheet={sheet_name}"
-    return pd.read_csv(url)
-
-sheet_name = st.sidebar.selectbox("Select Laboratory", ["OPIC_LAB", "CHEVRON_LAB"])
-df = load_data(sheet_name)
-
-# Ensure numeric columns are floats
-df["CURRENT PRICE"] = pd.to_numeric(df["CURRENT PRICE"], errors="coerce").fillna(0.0)
-df["COGS"] = pd.to_numeric(df["COGS"], errors="coerce").fillna(0.0)
+def load_sheet(sheet_name):
+    """Loads a Google Sheet as CSV and converts numeric columns safely."""
+    url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
+    df = pd.read_csv(url)
+    df.columns = df.columns.str.strip().str.upper()
+    for col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors="ignore")
+    return df
 
 # --- SIDEBAR CONTROLS ---
-selected_test = st.sidebar.selectbox("Select Test", df["TEST NAME"])
+st.sidebar.header("Simulation Controls")
+
+lab = st.sidebar.selectbox("Select Lab Location", ["OPIC_LAB", "CHEVRON_LAB"])
+df = load_sheet(lab)
+
+selected_test = st.sidebar.selectbox("Select Test", df["TEST NAME"].unique())
 markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.1)
 custom_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0.0, value=0.0, step=500.0)
-volume = st.sidebar.number_input("Projected Test Volume", 1, 500, 50)
-opex_increase_rate = st.sidebar.slider("OPEX Volume Sensitivity (%)", 0, 100, 0)
+volume = st.sidebar.slider("Projected Volume", 1, 500, 100, 5)
+opex_increase_rate = st.sidebar.slider("OPEX Volume Sensitivity (%)", 0, 100, 0, 5)
 
 # --- FETCH TEST DETAILS ---
 test = df[df["TEST NAME"] == selected_test].iloc[0]
 current_price = float(test["CURRENT PRICE"])
 cogs_per_test = float(test["COGS"])
 
-# --- SAFE CONVERSION HELPER ---
-def to_float(value, default=0.0):
-    try:
-        return float(value)
-    except:
-        return default
-
+# --- HELPER FUNCTION ---
 def round100(value):
-    return int(math.ceil(value / 100.0)) * 100
+    try:
+        return int(math.ceil(value / 100.0)) * 100
+    except:
+        return 0
 
-# --- PRICE CALCULATIONS WITH MINIMUM MARGIN ---
-opex_sensitivity = 0.25  # base OPEX = 25% of revenue
-
-if custom_price > 0:
-    proposed_price = custom_price
-else:
-    # Step 1: Base markup
-    base_price = cogs_per_test * markup
-
-    # Step 2: OPEX per test
-    opex_per_test = opex_sensitivity * base_price
-
-    # Step 3: Calculate margin
-    profit = base_price - cogs_per_test - opex_per_test
-    net_margin = profit / base_price if base_price > 0 else 0
-
-    # Step 4: Enforce minimum 20% net margin
-    if net_margin < 0.20:
-        base_price = (cogs_per_test + opex_per_test) / (1 - 0.20)
-    
-    proposed_price = base_price
-
-# --- ROUND VALUES ---
+# --- PRICE CALCULATIONS ---
+proposed_price = custom_price if custom_price > 0 else cogs_per_test * markup
 proposed_price = round100(proposed_price)
-current_price = round100(current_price)
-cogs_per_test = round100(cogs_per_test)
 
-# --- VOLUME-BASED CALCULATIONS ---
+# --- CURRENT SCENARIO ---
 current_revenue = current_price
 current_cogs = cogs_per_test
-base_opex = 0.25 * current_revenue
+current_gross_profit = current_revenue - current_cogs
+base_opex = 0.25 * current_revenue  # 25% OPEX assumption
+current_ebitda = current_gross_profit - base_opex
+current_margin = round((current_ebitda / current_revenue) * 100, 1) if current_revenue != 0 else 0
 
+# --- PROPOSED SCENARIO ---
 proposed_revenue = proposed_price * volume
 proposed_cogs = cogs_per_test * volume
+proposed_gross_profit = proposed_revenue - proposed_cogs
+
+# OPEX increases slightly with volume (logarithmic scaling)
 opex_factor = 1 + (opex_increase_rate / 100)
 proposed_opex = base_opex * (1 + 0.1 * math.log1p(volume / 50)) * opex_factor
-proposed_gross_profit = proposed_revenue - proposed_cogs
-proposed_ebitda = proposed_gross_profit - proposed_opex
-proposed_margin = round((proposed_ebitda / proposed_revenue) * 100, 1)
 
-current_gross_profit = current_revenue - current_cogs
-current_ebitda = current_gross_profit - base_opex
-current_margin = round((current_ebitda / current_revenue) * 100, 1)
+proposed_ebitda = proposed_gross_profit - proposed_opex
+proposed_margin = round((proposed_ebitda / proposed_revenue) * 100, 1) if proposed_revenue != 0 else 0
+
+# --- 20% MINIMUM MARGIN CHECK ---
+min_required_price = (proposed_cogs + proposed_opex) / (1 - 0.2) / volume
+if proposed_price < min_required_price:
+    proposed_price = round100(min_required_price)
+    proposed_revenue = proposed_price * volume
+    proposed_gross_profit = proposed_revenue - proposed_cogs
+    proposed_ebitda = proposed_gross_profit - proposed_opex
+    proposed_margin = round((proposed_ebitda / proposed_revenue) * 100, 1)
+    price_note = "🔸 Adjusted upward to maintain ≥ 20% profit margin"
+else:
+    price_note = "✅ Within target margin range"
+
+# --- ROUND KEY FIGURES ---
+def r100(x): return round100(x)
+current_revenue, proposed_revenue = r100(current_revenue), r100(proposed_revenue)
+current_cogs, proposed_cogs = r100(current_cogs), r100(proposed_cogs)
+base_opex, proposed_opex = r100(base_opex), r100(proposed_opex)
+current_ebitda, proposed_ebitda = r100(current_ebitda), r100(proposed_ebitda)
 
 # --- COMPARISON TABLE ---
 comparison = pd.DataFrame({
@@ -124,45 +120,51 @@ comparison = pd.DataFrame({
     ]
 })
 
-# --- DISPLAY TABLE ---
-st.subheader(f"📊 Pricing Simulation: {selected_test}")
-numeric_cols = comparison.select_dtypes(include=['float64', 'int64']).columns
-comparison[numeric_cols] = comparison[numeric_cols].apply(lambda x: x.round(0))
+# --- STYLING ---
+def highlight_margin(val):
+    """Highlight margin green if ≥20%, else red"""
+    try:
+        val = float(val)
+        color = "lightgreen" if val >= 20 else "#ffcccc"
+        return f"background-color: {color}"
+    except:
+        return ""
 
-# Highlight EBITDA and Margin changes
-def highlight_rows(row):
-    if row["Metric"] in ["EBITDA (₦)", "Profit Margin (%)"]:
-        return ["background-color: #fdd835; font-weight: bold;"] * len(row)
-    return [""] * len(row)
+styled_df = comparison.style.format("{:,.0f}", na_rep="-").applymap(
+    highlight_margin, subset=["Current", "Proposed"]
+)
 
-st.dataframe(comparison.style.apply(highlight_rows, axis=1), use_container_width=True)
+# --- DISPLAY RESULTS ---
+st.subheader(f"Pricing Simulation: {selected_test} ({lab})")
+st.dataframe(styled_df, use_container_width=True)
 
 # --- SUMMARY ---
 st.markdown(f"""
-**💬 Summary Insight**  
-At a proposed price of **₦{proposed_price:,.0f}**, revenue and COGS scale with test volume (**{volume} tests**).  
-EBITDA margin shifts from **{current_margin:.1f}%** to **{proposed_margin:.1f}%**.  
-OPEX increases by {opex_increase_rate}% sensitivity for higher volumes, moving from 
-₦{base_opex:,.0f} to ₦{proposed_opex:,.0f}.
+**Summary Insight**  
+At a proposed price of **₦{proposed_price:,.0f}**, revenue and COGS scale with **{volume} tests**.  
+EBITDA margin moves from **{current_margin:.1f}%** to **{proposed_margin:.1f}%**.  
+OPEX increases by **{opex_increase_rate}%** sensitivity for higher volumes, rising from 
+₦{base_opex:,.0f} to ₦{proposed_opex:,.0f}.  
+{price_note}
 """)
 
-# --- EBITDA IMPACT VISUAL ---
-st.subheader("📈 Volume Projection (EBITDA Impact)")
+# --- VOLUME SIMULATION (EBITDA vs Volume) ---
+st.subheader("Volume Projection (EBITDA Impact)")
 
 projection = pd.DataFrame({
     "Volume": range(1, volume + 1),
     "Total Revenue": [proposed_price * v for v in range(1, volume + 1)],
     "Total EBITDA": [
-        (proposed_price * v - cogs_per_test * v - 0.25 * proposed_price * v * opex_factor)
+        (proposed_price * v - cogs_per_test * v -
+         0.25 * proposed_price * v * (1 + (opex_increase_rate / 100)))
         for v in range(1, volume + 1)
     ]
 })
 st.line_chart(projection.set_index("Volume"))
 
 # --- FOOTER ---
+st.markdown("---")
 st.markdown(
-    "<hr style='margin-top:30px;'>"
-    "<p style='text-align:center; color:#4CAF50; font-weight:bold;'>"
-    "Created by <span style='color:#2E7D32;'>Ayokunle Thomas</span> — Data Scientist</p>",
+    "<p style='text-align:center; font-size:14px;'>Created by <b>Ayokunle Thomas</b> – Data Scientist</p>",
     unsafe_allow_html=True
 )
