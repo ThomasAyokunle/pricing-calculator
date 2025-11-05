@@ -134,21 +134,21 @@ st.dataframe(
 )
 
 # --- TEST OVERVIEW TABLE (Current vs Proposed) ---
-df["PROPOSED PRICE"] = df["COGS"] * markup
-df["DIFFERENCE (₦)"] = df["PROPOSED PRICE"] - df["CURRENT PRICE"]
+#df["PROPOSED PRICE"] = df["COGS"] * markup
+#df["DIFFERENCE (₦)"] = df["PROPOSED PRICE"] - df["CURRENT PRICE"]
 
-overview = df[["TEST NAME", "CURRENT PRICE", "PROPOSED PRICE", "DIFFERENCE (₦)"]]
-overview["PROPOSED PRICE"] = overview["PROPOSED PRICE"].apply(round100)
-overview["DIFFERENCE (₦)"] = overview["DIFFERENCE (₦)"].apply(round100)
+#overview = df[["TEST NAME", "CURRENT PRICE", "PROPOSED PRICE", "DIFFERENCE (₦)"]]
+#overview["PROPOSED PRICE"] = overview["PROPOSED PRICE"].apply(round100)
+#overview["DIFFERENCE (₦)"] = overview["DIFFERENCE (₦)"].apply(round100)
 
-st.subheader("Test Overview – Current vs Proposed Pricing")
+#st.subheader("Test Overview – Current vs Proposed Pricing")
 # Format only numeric columns safely
-st.dataframe(
-    overview.style.format({
-        col: "{:,.0f}" for col in overview.select_dtypes(include=["number"]).columns
-    }),
-    use_container_width=True
-)
+#st.dataframe(
+ #   overview.style.format({
+  #      col: "{:,.0f}" for col in overview.select_dtypes(include=["number"]).columns
+   # }),
+    #use_container_width=True
+#)
 
 
 # --- SUMMARY ---
@@ -182,5 +182,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
