@@ -142,7 +142,14 @@ overview["PROPOSED PRICE"] = overview["PROPOSED PRICE"].apply(round100)
 overview["DIFFERENCE (₦)"] = overview["DIFFERENCE (₦)"].apply(round100)
 
 st.subheader("Test Overview – Current vs Proposed Pricing")
-st.dataframe(overview.style.format("{:,.0f}"), use_container_width=True)
+# Format only numeric columns safely
+st.dataframe(
+    overview.style.format({
+        col: "{:,.0f}" for col in overview.select_dtypes(include=["number"]).columns
+    }),
+    use_container_width=True
+)
+
 
 # --- SUMMARY ---
 st.markdown(f"""
@@ -175,4 +182,5 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
