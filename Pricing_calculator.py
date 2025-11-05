@@ -136,7 +136,11 @@ styled_df = comparison.style.format("{:,.0f}", na_rep="-").applymap(
 
 # --- DISPLAY RESULTS ---
 st.subheader(f"Pricing Simulation: {selected_test} ({lab})")
-st.dataframe(styled_df, use_container_width=True)
+def highlight_min(s):
+    is_min = s == s.min()
+    return ["background-color: #ffcccc" if v else "" for v in is_min]
+
+styled_df = df.style.apply(highlight_min, subset=["MARGIN %"], axis=0)
 
 # --- SUMMARY ---
 st.markdown(f"""
@@ -168,3 +172,4 @@ st.markdown(
     "<p style='text-align:center; font-size:14px;'>Created by <b>Ayokunle Thomas</b> – Data Scientist</p>",
     unsafe_allow_html=True
 )
+
