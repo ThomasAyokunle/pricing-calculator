@@ -191,8 +191,18 @@ st.markdown(
     "<p style='text-align:center; font-size:14px;'>Created by <b>Ayokunle Thomas</b> – Data Scientist</p>",
     unsafe_allow_html=True
 )
-st.caption("https://www.linkedin.com/in/ayokunle-thomas/|https://github.com/ThomasAyokunle")
+st.markdown("---")
+st.markdown(
+    """
+    <div style="text-align: center; font-size: 12px; font-style: italic;">
+        <a href="https://www.linkedin.com/in/ayokunle-thomas" target="_blank">LinkedIn</a> | 
+        <a href="https://github.com/ThomasAyokunle" target="_blank">GitHub</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
 
