@@ -32,7 +32,7 @@ def load_sheet(sheet_name):
 # --- SIDEBAR CONTROLS ---
 st.sidebar.header("Simulation Controls")
 
-lab = st.sidebar.selectbox("Select Lab Location", ["OPIC LAB", "CHEVRON LAB"])
+lab = st.sidebar.selectbox("Select Lab Location", ["OPIC_LAB", "CHEVRON_LAB"])
 df = load_sheet(lab)
 
 selected_test = st.sidebar.selectbox("Select Test", df["TEST NAME"].unique())
@@ -192,6 +192,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
 
