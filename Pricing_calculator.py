@@ -61,7 +61,16 @@ proposed_price = round100(proposed_price)
 current_revenue = current_price
 current_cogs = cogs_per_test
 current_gross_profit = current_revenue - current_cogs
-base_opex = 0.25 * current_revenue  # 25% OPEX assumption
+
+# --- OPEX % HANDLING ---
+# If OPEX % column exists, read the first non-empty value and apply it.
+if "OPEX %" in df.columns:
+    opex_percent = df["OPEX %"].dropna().iloc[0] / 100
+else:
+    opex_percent = 0.25  # fallback default (25%)
+
+base_opex = opex_percent * current_revenue
+
 current_ebitda = current_gross_profit - base_opex
 current_margin = round((current_ebitda / current_revenue) * 100, 1) if current_revenue != 0 else 0
 
@@ -70,9 +79,9 @@ proposed_revenue = proposed_price * volume
 proposed_cogs = cogs_per_test * volume
 proposed_gross_profit = proposed_revenue - proposed_cogs
 
-# OPEX increases slightly with volume (logarithmic scaling)
+# Apply the same opex_percent logic with sensitivity and volume scaling
 opex_factor = 1 + (opex_increase_rate / 100)
-proposed_opex = base_opex * (1 + 0.1 * math.log1p(volume / 50)) * opex_factor
+proposed_opex = (opex_percent * proposed_revenue) * (1 + 0.1 * math.log1p(volume / 50)) * opex_factor
 
 proposed_ebitda = proposed_gross_profit - proposed_opex
 proposed_margin = round((proposed_ebitda / proposed_revenue) * 100, 1) if proposed_revenue != 0 else 0
@@ -183,6 +192,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
 
