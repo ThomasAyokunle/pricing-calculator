@@ -94,9 +94,9 @@ if proposed_price < min_required_price:
     proposed_gross_profit = proposed_revenue - proposed_cogs
     proposed_ebitda = proposed_gross_profit - proposed_opex
     proposed_margin = round((proposed_ebitda / proposed_revenue) * 100, 1)
-    price_note = "🔸 Adjusted upward to maintain ≥ 20% profit margin"
+    price_note = "Adjusted upward to maintain ≥ 20% profit margin"
 else:
-    price_note = "✅ Within target margin range"
+    price_note = "Within target margin range"
 
 # --- ROUND KEY FIGURES ---
 def r100(x): return round100(x)
@@ -169,7 +169,7 @@ OPEX increases by **{opex_increase_rate}%** sensitivity for higher volumes, risi
 ₦{base_opex:,.0f} to ₦{proposed_opex:,.0f}.  
 {price_note}
 """)
-st.caption("💡 *Opex Sensitivity controls how much operating cost grows as volume increases.*")
+st.caption(" *Opex Sensitivity controls how much operating cost grows as volume increases.*")
 
 # --- VOLUME SIMULATION (EBITDA vs Volume) ---
 st.subheader("Volume Projection (EBITDA Impact)")
@@ -219,6 +219,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
 
