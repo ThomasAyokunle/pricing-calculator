@@ -38,7 +38,7 @@ df = load_sheet(lab)
 selected_test = st.sidebar.selectbox("Select Test", df["TEST NAME"].unique())
 markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.1)
 custom_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0.0, value=0.0, step=500.0)
-volume = st.sidebar.slider("Projected Volume", 1, 500, 20, 5)
+volume = st.sidebar.slider("Projected Volume", 0, 500, 20, 5)
 opex_increase_rate = st.sidebar.slider("OPEX Volume Sensitivity (%)", 0, 100, 0, 5)
 
 # --- FETCH TEST DETAILS ---
@@ -219,6 +219,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
 
