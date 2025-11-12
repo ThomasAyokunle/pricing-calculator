@@ -1,5 +1,5 @@
 # ==============================================================
-# Laboratory Pricing Calculator (Google Sheet Integrated)
+# Laboratory Pricing Calculator (Using Google Sheet)
 # ==============================================================
 
 import streamlit as st
@@ -13,8 +13,8 @@ st.set_page_config(page_title="D-Rock Laboratory Pricing Calculator", layout="wi
 # --- HEADER ---
 st.title("Laboratory Pricing Calculator")
 st.markdown("""
-This calculator estimates and compares pricing scenarios for laboratory tests.  
-It helps you understand how pricing, OPEX, and volume affect profitability.
+This calculator estimates and compares pricing scenarios for our laboratory tests.  
+It helps us understand how Pricing, OPEX, and Volume affect Profitability.
 """)
 
 # --- GOOGLE SHEET SETUP ---
@@ -32,7 +32,7 @@ def load_sheet(sheet_name):
 # --- SIDEBAR CONTROLS ---
 st.sidebar.header("Simulation Controls")
 
-lab = st.sidebar.selectbox("Select Lab Location", ["OPIC_LAB", "CHEVRON_LAB"])
+lab = st.sidebar.selectbox("Select Lab Location", ["OPIC LAB", "CHEVRON LAB"])
 df = load_sheet(lab)
 
 selected_test = st.sidebar.selectbox("Select Test", df["TEST NAME"].unique())
@@ -163,7 +163,7 @@ st.dataframe(
 # --- SUMMARY ---
 st.markdown(f"""
 **Summary Insight**  
-At a proposed price of **₦{proposed_price:,.0f}**, revenue and COGS scale with **{volume} tests**.  
+At a proposed price of **₦{proposed_price:,.0f}**, Revenue and COGS scale with **{volume} tests**.  
 EBITDA margin moves from **{current_margin:.1f}%** to **{proposed_margin:.1f}%**.  
 OPEX increases by **{opex_increase_rate}%** sensitivity for higher volumes, rising from 
 ₦{base_opex:,.0f} to ₦{proposed_opex:,.0f}.  
@@ -219,6 +219,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("ExCare Services Laboratory Pricing Calculator © 2025")
+
 
 
 
