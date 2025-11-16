@@ -38,7 +38,7 @@ markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.05,
     help="Quick pricing using a multiplier on cost. Example: 1.5× means 50% markup"
 )
 proposed_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0, value=0, step=50,
-    help="Enter a specific price to override the markup calculation"
+    help="Enter a specific price to override the markup calculation")
 volume = st.sidebar.slider("Expected Volume (tests)", 1, 500, 20, 5,
     help="Total number of tests expected. Higher volumes may justify lower prices if partner commits to bulk orders"
 )
@@ -204,4 +204,5 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
+
 
