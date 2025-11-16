@@ -10,7 +10,7 @@ import math
 st.set_page_config(page_title="D-Rock Laboratory Pricing Calculator", layout="wide")
 
 # --- HEADER ---
-st.title("🔬 Laboratory Pricing Calculator")
+st.title("Laboratory Pricing Calculator")
 st.markdown("Compare pricing scenarios to find the best price that meets your profit target.")
 
 # --- GOOGLE SHEET SETUP ---
@@ -34,7 +34,11 @@ lab_location = st.sidebar.selectbox("Lab Location", ["OPICLAB", "CHEVRONLAB"])
 df = load_sheet(lab_location)
 
 test_name = st.sidebar.selectbox("Select Test", df["TEST NAME"].unique())
-proposed_price = st.sidebar.number_input("Proposed Price (₦)", min_value=0, value=0, step=50)
+markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.05,
+    help="Quick pricing using a multiplier on cost. Example: 1.5× means 50% markup"
+)
+proposed_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0, value=0, step=50,
+    help="Enter a specific price to override the markup calculation"
 volume = st.sidebar.slider("Expected Volume (tests)", 1, 500, 20, 5,
     help="Total number of tests expected. Higher volumes may justify lower prices if partner commits to bulk orders"
 )
@@ -153,18 +157,18 @@ else:
     st.success(f"**{recommendation}** - You have {(proposed_margin - target_margin):.1f}% cushion above minimum.")
 
 # --- VOLUME CHART ---
-st.markdown("---")
-st.subheader("📈 Profit at Different Volumes")
+#st.markdown("---")
+#st.subheader("📈 Profit at Different Volumes")
 
-volumes = list(range(1, max(volume, 100) + 1))
-profits = [proposed_profit * v for v in volumes]
+#volumes = list(range(1, max(volume, 100) + 1))
+#profits = [proposed_profit * v for v in volumes]
 
-chart_data = pd.DataFrame({
-    "Volume": volumes,
-    "Total Profit (₦)": profits
-})
+#chart_data = pd.DataFrame({
+ #   "Volume": volumes,
+  #  "Total Profit (₦)": profits
+#})
 
-st.line_chart(chart_data.set_index("Volume"))
+#st.line_chart(chart_data.set_index("Volume"))
 
 # --- FOOTER ---
 st.markdown("---")
@@ -200,3 +204,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
+
