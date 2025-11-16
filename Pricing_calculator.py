@@ -38,7 +38,8 @@ markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.05,
     help="Quick pricing using a multiplier on cost. Example: 1.5× means 50% markup"
 )
 proposed_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0, value=0, step=50,
-    help="Enter a specific price to override the markup calculation")
+    help="Enter a specific price to override the markup calculation"
+)
 volume = st.sidebar.slider("Expected Volume (tests)", 1, 500, 20, 5,
     help="Total number of tests expected. Higher volumes may justify lower prices if partner commits to bulk orders"
 )
@@ -63,8 +64,12 @@ else:
     opex_rate = 0.25
 
 # --- CALCULATE PROPOSED PRICE ---
-if proposed_price == 0:
-    proposed_price = round50(cogs * 1.5)  # Default 1.5x markup
+if proposed_price > 0:
+    # Use custom price if entered
+    proposed_price = round50(proposed_price)
+else:
+    # Use markup multiplier
+    proposed_price = round50(cogs * markup)
 
 # --- PER TEST CALCULATIONS ---
 # Current
@@ -157,7 +162,7 @@ else:
     st.success(f"**{recommendation}** - You have {(proposed_margin - target_margin):.1f}% cushion above minimum.")
 
 # --- VOLUME CHART ---
-#st.markdown("---")
+#-- st.markdown("---")
 #st.subheader("📈 Profit at Different Volumes")
 
 #volumes = list(range(1, max(volume, 100) + 1))
@@ -165,7 +170,7 @@ else:
 
 #chart_data = pd.DataFrame({
  #   "Volume": volumes,
-  #  "Total Profit (₦)": profits
+#    "Total Profit (₦)": profits
 #})
 
 #st.line_chart(chart_data.set_index("Volume"))
@@ -204,5 +209,3 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
-
-
