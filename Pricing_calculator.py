@@ -187,6 +187,29 @@ st.dataframe(
     use_container_width=True
 )
 
+# --- TOTAL VOLUME SUMMARY ---
+st.subheader("Total Volume Impact")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown(f"""
+    **Scenario Summary:**
+    - **Volume**: {volume} units
+    - **Price per Unit**: ₦{proposed_price_per_unit:,.0f}
+    - **Total Revenue**: ₦{total_revenue:,.0f}
+    - **Total EBITDA**: ₦{total_ebitda:,.0f}
+    - **Net Margin**: {proposed_margin:.1f}%
+    """)
+
+with col2:
+    st.markdown(f"""
+    **Cost Breakdown:**
+    - **Total COGS**: ₦{total_cogs:,.0f} ({(total_cogs/total_revenue*100):.1f}%)
+    - **Total OPEX**: ₦{total_opex:,.0f} ({(total_opex/total_revenue*100):.1f}%)
+    - **Gross Margin**: {((total_gross_profit/total_revenue)*100):.1f}%
+    """)
+
 # --- DISPLAY: RECOMMENDATION ---
 st.markdown("---")
 st.subheader("Recommendation")
@@ -246,3 +269,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
+
