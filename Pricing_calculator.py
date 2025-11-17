@@ -10,7 +10,7 @@ import math
 st.set_page_config(page_title="D-Rock Laboratory Pricing Calculator", layout="wide")
 
 # --- HEADER ---
-st.title("Laboratory Pricing Calculator")
+st.title("🔬 Laboratory Pricing Calculator")
 st.markdown("Compare pricing scenarios to find the best price that meets your profit target.")
 
 # --- GOOGLE SHEET SETUP ---
@@ -40,7 +40,7 @@ markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.05,
 proposed_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0, value=0, step=50,
     help="Enter a specific price to override the markup calculation"
 )
-volume = st.sidebar.slider("Expected Volume (tests)", 0, 500, 20, 5,
+volume = st.sidebar.slider("Expected Volume (tests)", 1, 500, 20, 5,
     help="Total number of tests expected. Higher volumes may justify lower prices if partner commits to bulk orders"
 )
 opex_adjustment = st.sidebar.slider(
@@ -188,31 +188,39 @@ st.dataframe(
 )
 
 # --- TOTAL VOLUME SUMMARY ---
+st.markdown("---")
 st.subheader("Total Volume Impact")
+
+# Calculate totals
+total_cogs = cogs * volume
+total_opex = proposed_opex * volume
+total_gross_profit = proposed_gross_profit * volume
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.markdown(f"""
     **Scenario Summary:**
-    - **Volume**: {volume} units
-    - **Price per Unit**: ₦{proposed_price_per_unit:,.0f}
+    - **Volume**: {volume} tests
+    - **Price per Test**: ₦{proposed_price:,.0f}
     - **Total Revenue**: ₦{total_revenue:,.0f}
-    - **Total EBITDA**: ₦{total_ebitda:,.0f}
+    - **Total EBITDA**: ₦{total_profit:,.0f}
     - **Net Margin**: {proposed_margin:.1f}%
     """)
 
 with col2:
     st.markdown(f"""
     **Cost Breakdown:**
-    - **Total COGS**: ₦{total_cogs:,.0f} ({(total_cogs/total_revenue*100):.1f}%)
-    - **Total OPEX**: ₦{total_opex:,.0f} ({(total_opex/total_revenue*100):.1f}%)
-    - **Gross Margin**: {((total_gross_profit/total_revenue)*100):.1f}%
+    - **Total COGS**: ₦{total_cogs:,.0f} ({(total_cogs/total_revenue*100) if total_revenue > 0 else 0:.1f}%)
+    - **Total OPEX**: ₦{total_opex:,.0f} ({(total_opex/total_revenue*100) if total_revenue > 0 else 0:.1f}%)
+    - **Gross Margin**: {((total_gross_profit/total_revenue)*100) if total_revenue > 0 else 0:.1f}%
     """)
 
 # --- DISPLAY: RECOMMENDATION ---
+
+# --- DISPLAY: RECOMMENDATION ---
 st.markdown("---")
-st.subheader("Recommendation")
+st.subheader("💡 Recommendation")
 
 if proposed_margin < target_margin:
     st.error(f"**{recommendation}** to reach {target_margin}% margin target.")
@@ -222,18 +230,18 @@ else:
     st.success(f"**{recommendation}** - You have {(proposed_margin - target_margin):.1f}% cushion above minimum.")
 
 # --- VOLUME CHART ---
-#st.markdown("---")
-#st.subheader("📈 Profit at Different Volumes")
+st.markdown("---")
+st.subheader("📈 Profit at Different Volumes")
 
-#volumes = list(range(1, max(volume, 100) + 1))
-#profits = [proposed_profit * v for v in volumes]
+volumes = list(range(1, max(volume, 100) + 1))
+profits = [proposed_profit * v for v in volumes]
 
-#chart_data = pd.DataFrame({
- #   "Volume": volumes,
-  #  "Total Profit (₦)": profits
-#})
+chart_data = pd.DataFrame({
+    "Volume": volumes,
+    "Total Profit (₦)": profits
+})
 
-#st.line_chart(chart_data.set_index("Volume"))
+st.line_chart(chart_data.set_index("Volume"))
 
 # --- FOOTER ---
 st.markdown("---")
@@ -269,4 +277,3 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
-
