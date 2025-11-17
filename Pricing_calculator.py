@@ -10,7 +10,7 @@ import math
 st.set_page_config(page_title="D-Rock Laboratory Pricing Calculator", layout="wide")
 
 # --- HEADER ---
-st.title("🔬 Laboratory Pricing Calculator")
+st.title("Laboratory Pricing Calculator")
 st.markdown("Compare pricing scenarios to find the best price that meets your profit target.")
 
 # --- GOOGLE SHEET SETUP ---
@@ -230,18 +230,18 @@ else:
     st.success(f"**{recommendation}** - You have {(proposed_margin - target_margin):.1f}% cushion above minimum.")
 
 # --- VOLUME CHART ---
-st.markdown("---")
-st.subheader("📈 Profit at Different Volumes")
+#st.markdown("---")
+#st.subheader("📈 Profit at Different Volumes")
 
-volumes = list(range(1, max(volume, 100) + 1))
-profits = [proposed_profit * v for v in volumes]
+#volumes = list(range(1, max(volume, 100) + 1))
+#profits = [proposed_profit * v for v in volumes]
 
-chart_data = pd.DataFrame({
-    "Volume": volumes,
-    "Total Profit (₦)": profits
-})
+#chart_data = pd.DataFrame({
+  #  "Volume": volumes,
+ #   "Total Profit (₦)": profits
+#})
 
-st.line_chart(chart_data.set_index("Volume"))
+#st.line_chart(chart_data.set_index("Volume"))
 
 # --- FOOTER ---
 st.markdown("---")
@@ -277,3 +277,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
+
