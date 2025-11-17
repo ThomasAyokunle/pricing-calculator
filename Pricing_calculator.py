@@ -10,7 +10,7 @@ import math
 st.set_page_config(page_title="D-Rock Laboratory Pricing Calculator", layout="wide")
 
 # --- HEADER ---
-st.title("Laboratory Pricing Calculator")
+st.title("🔬 Laboratory Pricing Calculator")
 st.markdown("Compare pricing scenarios to find the best price that meets your profit target.")
 
 # --- GOOGLE SHEET SETUP ---
@@ -40,7 +40,7 @@ markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.05,
 proposed_price = st.sidebar.number_input("Or Enter Proposed Price (₦)", min_value=0, value=0, step=50,
     help="Enter a specific price to override the markup calculation"
 )
-volume = st.sidebar.slider("Expected Volume (tests)", 0, 500, 20, 5,
+volume = st.sidebar.slider("Expected Volume (tests)", 1, 500, 20, 5,
     help="Total number of tests expected. Higher volumes may justify lower prices if partner commits to bulk orders"
 )
 opex_adjustment = st.sidebar.slider(
@@ -88,22 +88,24 @@ total_profit = proposed_profit * volume
 
 # --- CHECK MINIMUM MARGIN ---
 min_price_needed = (cogs + proposed_opex) / (1 - target_margin / 100)
+margin_gap = proposed_price - min_price_needed
 
-if proposed_margin < target_margin:
+if margin_gap < 0:
+    st.warning(f"⚠️ **Price below minimum threshold!** Need ₦{round50(min_price_needed):,.0f} to achieve {target_margin}% margin.")
     margin_status = "🔴 Below Target"
     status_color = "red"
     recommendation = f"Increase price to at least ₦{round50(min_price_needed):,.0f}"
-elif proposed_margin < target_margin + 5:
-    margin_status = "🟡 Close to Minimum"
+elif margin_gap < 500:
+    margin_status = "🟡 At Minimum"
     status_color = "orange"
     recommendation = "Price works but leaves little room for unexpected costs"
 else:
-    margin_status = "🟢 Good"
+    margin_status = "🟢 Healthy Margin"
     status_color = "green"
     recommendation = "Price is within target range"
 
 # --- DISPLAY: KEY METRICS ---
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
@@ -114,41 +116,76 @@ with col1:
 
 with col2:
     st.metric(
-        "Profit Margin",
+        "Net Margin",
         f"{proposed_margin:.1f}%",
-        margin_status
+        f"{(proposed_margin - current_margin):+.1f}%"
     )
 
 with col3:
     st.metric(
+        "Total Revenue",
+        f"₦{total_revenue:,.0f}",
+        f"{volume} tests"
+    )
+
+with col4:
+    st.metric(
         "Total Profit",
         f"₦{total_profit:,.0f}",
-        f"at {volume} tests"
+        margin_status
     )
 
 # --- DISPLAY: COMPARISON TABLE ---
 st.markdown("---")
-st.subheader("Per Test Breakdown")
+st.subheader("Per Test Economics")
+
+# Calculate gross profit for display
+current_gross_profit = current_price - cogs
+proposed_gross_profit = proposed_price - cogs
 
 comparison = pd.DataFrame({
-    "": ["Price", "Cost of Goods", "Operating Cost", "Profit", "Profit Margin"],
+    "Metric": [
+        "Price per Test (₦)",
+        "COGS per Test (₦)", 
+        "Gross Profit per Test (₦)",
+        "OPEX per Test (₦)",
+        "EBITDA per Test (₦)",
+        "Net Margin (%)"
+    ],
     "Current": [
-        f"₦{round50(current_price):,.0f}",
-        f"₦{round50(cogs):,.0f}",
-        f"₦{round50(current_opex):,.0f}",
-        f"₦{round50(current_profit):,.0f}",
-        f"{current_margin:.1f}%"
+        round50(current_price),
+        round50(cogs),
+        round50(current_gross_profit),
+        round50(current_opex),
+        round50(current_profit),
+        current_margin
     ],
     "Proposed": [
-        f"₦{round50(proposed_price):,.0f}",
-        f"₦{round50(cogs):,.0f}",
-        f"₦{round50(proposed_opex):,.0f}",
-        f"₦{round50(proposed_profit):,.0f}",
-        f"{proposed_margin:.1f}%"
+        round50(proposed_price),
+        round50(cogs),
+        round50(proposed_gross_profit),
+        round50(proposed_opex),
+        round50(proposed_profit),
+        proposed_margin
+    ],
+    "Difference": [
+        round50(proposed_price - current_price),
+        0,  # COGS stays same per test
+        round50(proposed_gross_profit - current_gross_profit),
+        round50(proposed_opex - current_opex),
+        round50(proposed_profit - current_profit),
+        round(proposed_margin - current_margin, 1)
     ]
 })
 
-st.dataframe(comparison, use_container_width=True, hide_index=True)
+st.dataframe(
+    comparison.style.format({
+        "Current": "{:,.0f}",
+        "Proposed": "{:,.0f}",
+        "Difference": lambda x: f"{x:+,.0f}" if isinstance(x, (int, float)) else x
+    }),
+    use_container_width=True
+)
 
 # --- DISPLAY: RECOMMENDATION ---
 st.markdown("---")
@@ -162,18 +199,18 @@ else:
     st.success(f"**{recommendation}** - You have {(proposed_margin - target_margin):.1f}% cushion above minimum.")
 
 # --- VOLUME CHART ---
-#-- st.markdown("---")
-#st.subheader("📈 Profit at Different Volumes")
+st.markdown("---")
+st.subheader("📈 Profit at Different Volumes")
 
-#volumes = list(range(1, max(volume, 100) + 1))
-#profits = [proposed_profit * v for v in volumes]
+volumes = list(range(1, max(volume, 100) + 1))
+profits = [proposed_profit * v for v in volumes]
 
-#chart_data = pd.DataFrame({
- #   "Volume": volumes,
-#    "Total Profit (₦)": profits
-#})
+chart_data = pd.DataFrame({
+    "Volume": volumes,
+    "Total Profit (₦)": profits
+})
 
-#st.line_chart(chart_data.set_index("Volume"))
+st.line_chart(chart_data.set_index("Volume"))
 
 # --- FOOTER ---
 st.markdown("---")
@@ -209,4 +246,3 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
-
