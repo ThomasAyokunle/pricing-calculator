@@ -33,7 +33,8 @@ st.sidebar.header("Settings")
 lab_location = st.sidebar.selectbox("Lab Location", ["OPICLAB", "CHEVRONLAB"])
 df = load_sheet(lab_location)
 
-test_name = st.sidebar.selectbox("Select Test", df["TEST NAME"].unique())
+test_names = st.sidebar.multiselect("Select Tests (for bundling)", df["TEST NAME"].unique(), default=[df["TEST NAME"].unique()[0]])
+                                    
 markup = st.sidebar.slider("Markup Multiplier (×)", 1.0, 5.0, 1.5, 0.05,
     help="Quick pricing using a multiplier on cost. Example: 1.5× means 50% markup"
 )
@@ -53,9 +54,12 @@ target_margin = st.sidebar.slider("Minimum Profit Margin (%)", 0, 50, 20, 1,
 )
 
 # --- GET TEST DATA ---
-test = df[df["TEST NAME"] == test_name].iloc[0]
-current_price = float(test["CURRENT PRICE"])
-cogs = float(test["COGS"])
+selected_tests = df[df["TEST NAME"].isin(test_names)]
+current_price = selected_tests["CURRENT PRICE"].sum()
+cogs = selected_tests["COGS"].sum()
+
+if len(test_names) > 1:
+    st.info(f"**Bundle:** {', '.join(test_names)} ({len(test_names)} tests)")
 
 # Get OPEX %
 if "OPEX %" in df.columns:
@@ -91,16 +95,16 @@ min_price_needed = (cogs + proposed_opex) / (1 - target_margin / 100)
 margin_gap = proposed_price - min_price_needed
 
 if margin_gap < 0:
-    st.warning(f"⚠️ **Price below minimum threshold!** Need ₦{round50(min_price_needed):,.0f} to achieve {target_margin}% margin.")
-    margin_status = "🔴 Below Target"
+    st.warning(f"**Price below minimum threshold!** Need ₦{round50(min_price_needed):,.0f} to achieve {target_margin}% margin.")
+    margin_status = "Below Target"
     status_color = "red"
     recommendation = f"Increase price to at least ₦{round50(min_price_needed):,.0f}"
 elif margin_gap < 500:
-    margin_status = "🟡 At Minimum"
+    margin_status = "At Minimum"
     status_color = "orange"
     recommendation = "Price works but leaves little room for unexpected costs"
 else:
-    margin_status = "🟢 Healthy Margin"
+    margin_status = "Healthy Margin"
     status_color = "green"
     recommendation = "Price is within target range"
 
@@ -137,7 +141,7 @@ with col4:
 
 # --- DISPLAY: COMPARISON TABLE ---
 st.markdown("---")
-st.subheader("Per Test Economics")
+st.subheader("Bundle Economics" if len(test_names) > 1 else "Per Test Economics")
 
 # Calculate gross profit for display
 current_gross_profit = current_price - cogs
@@ -277,5 +281,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("D-Rock Laboratory Pricing Calculator © 2025")
+
 
 
